@@ -49,8 +49,19 @@ pub fn process_flag(flag: &str, filename: &str) -> Result<(), WordCountErr> {
             println!("{} {}", contents.len(), filename);
             Ok(())
         }
+        "-l" => {
+            let Ok(contents) = read_to_string(filename) else {
+                return Err(WordCountErr::FileNotFound(String::from(
+                    "File not found or file is not accessible!",
+                )));
+            };
+
+            println!("{} {}", contents.lines().count(), filename);
+
+            Ok(())
+        }
         _ => Err(WordCountErr::UnrecognizedFlag(String::from(
-            "Invalid flag!",
+            "ccwc: invalid option",
         ))),
     }
 }
