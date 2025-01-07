@@ -1,4 +1,4 @@
-use std::{env, fmt::Display, fs::read_to_string};
+use std::{env, fmt::Display, fs::read_to_string, path::Path};
 
 #[derive(Debug)]
 pub struct Arguments(pub String, pub String);
@@ -23,18 +23,15 @@ impl Display for WordCountErr {
 pub fn read_arguments() -> Result<Arguments, WordCountErr> {
     let args: Vec<String> = env::args().collect();
 
-    if let [flag, filename] = &args[1..] {
-        Ok(Arguments(flag.to_string(), filename.to_string()))
-    } else {
-        if args.len() < 3 {
-            return Err(WordCountErr::NotEnoughLen(String::from(
-                "Not enough arguments were passed!",
-            )));
-        } else {
-            return Err(WordCountErr::NotEnoughLen(String::from(
-                "Too many arguments were passed!",
-            )));
-        }
+    match args.len() {
+        1 => Err(WordCountErr::NotEnoughLen(format!(
+            "ccwc: not enough arguments were passed"
+        ))),
+        2 => Ok(Arguments(args[1].to_string(), String::from(""))),
+        3 => Ok(Arguments(args[1].to_string(), args[2].to_string())),
+        _ => Err(WordCountErr::NotEnoughLen(format!(
+            "ccwc: too many arguments were passed"
+        ))),
     }
 }
 
@@ -82,9 +79,31 @@ pub fn process_flag(flag: &str, filename: &str) -> Result<(), WordCountErr> {
 
             Ok(())
         }
-        other => Err(WordCountErr::UnrecognizedFlag(format!(
-            "ccwc: invalid option -- '{}'",
-            other.replace("-", "")
-        ))),
+        other => {
+            if Path::new(other).exists() {
+                let contents = open_file(other)?;
+
+                let mut word_count = 0;
+
+                for line in contents.lines().into_iter() {
+                    word_count += line.split_whitespace().count();
+                }
+
+                println!(
+                    "{} {} {} {}",
+                    contents.lines().count(),
+                    word_count,
+                    contents.len(),
+                    other
+                );
+
+                Ok(())
+            } else {
+                Err(WordCountErr::UnrecognizedFlag(format!(
+                    "ccwc: invalid option -- '{}'",
+                    other.replace("-", "")
+                )))
+            }
+        }
     }
 }
