@@ -40,8 +40,9 @@ pub fn read_arguments() -> Result<Arguments, WordCountErr> {
 
 fn open_file(filename: &str) -> Result<String, WordCountErr> {
     let Ok(contents) = read_to_string(&filename) else {
-        return Err(WordCountErr::FileNotFound(String::from(
-            "File not found or file is not accessible!",
+        return Err(WordCountErr::FileNotFound(format!(
+            "ccwc: {}: No such file or directory",
+            filename
         )));
     };
 
@@ -51,18 +52,18 @@ fn open_file(filename: &str) -> Result<String, WordCountErr> {
 pub fn process_flag(flag: &str, filename: &str) -> Result<(), WordCountErr> {
     match flag {
         "-c" => {
-            let contents = open_file(&filename)?;
+            let contents = open_file(filename)?;
             println!("{} {}", contents.len(), filename);
             Ok(())
         }
         "-l" => {
-            let contents = open_file(&filename)?;
+            let contents = open_file(filename)?;
             println!("{} {}", contents.lines().count(), filename);
 
             Ok(())
         }
         "-w" => {
-            let contents = open_file(&filename)?;
+            let contents = open_file(filename)?;
 
             let mut word_count = 0;
 
@@ -74,8 +75,16 @@ pub fn process_flag(flag: &str, filename: &str) -> Result<(), WordCountErr> {
 
             Ok(())
         }
-        _ => Err(WordCountErr::UnrecognizedFlag(String::from(
-            "ccwc: invalid option",
+        "-m" => {
+            let contents = open_file(filename)?;
+
+            println!("{} {}", contents.chars().count(), filename);
+
+            Ok(())
+        }
+        other => Err(WordCountErr::UnrecognizedFlag(format!(
+            "ccwc: invalid option -- '{}'",
+            other.replace("-", "")
         ))),
     }
 }
