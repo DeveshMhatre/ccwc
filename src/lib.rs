@@ -1,4 +1,4 @@
-use std::{env, fmt::Display, fs::read_to_string, path::Path};
+use std::{env, fmt::Display, fs::read_to_string};
 
 #[derive(Debug)]
 pub struct Arguments(pub String, pub String);
@@ -80,7 +80,7 @@ pub fn process_flag(flag: &str, filename: &str) -> Result<(), WordCountErr> {
             Ok(())
         }
         other => {
-            if Path::new(other).exists() {
+            if !other.starts_with("-") {
                 let contents = open_file(other)?;
 
                 let mut word_count = 0;
