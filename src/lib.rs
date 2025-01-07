@@ -38,25 +38,39 @@ pub fn read_arguments() -> Result<Arguments, WordCountErr> {
     }
 }
 
+fn open_file(filename: &str) -> Result<String, WordCountErr> {
+    let Ok(contents) = read_to_string(&filename) else {
+        return Err(WordCountErr::FileNotFound(String::from(
+            "File not found or file is not accessible!",
+        )));
+    };
+
+    Ok(contents)
+}
+
 pub fn process_flag(flag: &str, filename: &str) -> Result<(), WordCountErr> {
     match flag {
         "-c" => {
-            let Ok(contents) = read_to_string(filename) else {
-                return Err(WordCountErr::FileNotFound(String::from(
-                    "File not found or file is not accessible!",
-                )));
-            };
+            let contents = open_file(&filename)?;
             println!("{} {}", contents.len(), filename);
             Ok(())
         }
         "-l" => {
-            let Ok(contents) = read_to_string(filename) else {
-                return Err(WordCountErr::FileNotFound(String::from(
-                    "File not found or file is not accessible!",
-                )));
-            };
-
+            let contents = open_file(&filename)?;
             println!("{} {}", contents.lines().count(), filename);
+
+            Ok(())
+        }
+        "-w" => {
+            let contents = open_file(&filename)?;
+
+            let mut word_count = 0;
+
+            for line in contents.lines().into_iter() {
+                word_count += line.split_whitespace().count();
+            }
+
+            println!("{} {}", word_count, filename);
 
             Ok(())
         }
